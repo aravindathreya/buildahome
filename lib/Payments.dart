@@ -328,6 +328,7 @@ class PaymentTasks extends State<PaymentTasksClass> {
   var tasks = [];
   var project_value= "";
   var outstanding= "";
+  var total_paid = "";
   ScrollController _controller = new ScrollController();
 
   @override
@@ -340,14 +341,15 @@ class PaymentTasks extends State<PaymentTasksClass> {
   call() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var id = prefs.getString('project_id');
-    var url = 'https://www.buildahome.in/api/get_all_tasks.php?project_id=$id ';
+    var url = 'https://www.buildahome.in/api/get_all_tasks.php?project_id=$id&nt_toggle=1 ';
     var response = await http.get(url);
-    var url1 = 'https://www.buildahome.in/api/get_outstanding.php?project_id=$id ';
+    var url1 = 'https://www.buildahome.in/api/get_payment.php?project_id=$id ';
     var response1 = await http.get(url1);
     var details = jsonDecode(response1.body);
     print(details);
     setState(() {
       outstanding = details[0]['outstanding'];
+      total_paid = details[0]['total_paid'];
       project_value = details[0]['value'];
       body = jsonDecode(response.body);
     });
@@ -479,7 +481,20 @@ class PaymentTasks extends State<PaymentTasksClass> {
                 children: <Widget>[
                 Container(
                   width: 150,
-                  child: Text("Outstanding :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))
+                  child: Text("Paid till date :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[500]))
+                ),
+                Container(
+                  child: Text("₹ "+total_paid, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[500]))
+                )
+              ],)
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: <Widget>[
+                Container(
+                  width: 150,
+                  child: Text("Current Outstanding :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))
                 ),
                 Container(
                   child: Text("₹ "+outstanding, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))

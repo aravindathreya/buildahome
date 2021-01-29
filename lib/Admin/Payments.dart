@@ -9,6 +9,8 @@ import '../main.dart';
 import "Dpr.dart";
 import "Scheduler.dart";
 import "Gallery.dart";
+import "Drawings.dart";
+
 class PaymentTaskWidget extends StatelessWidget {
 
   var id;
@@ -37,60 +39,88 @@ class PaymentTaskWidget extends StatelessWidget {
         ),
         body: PaymentTasksClass(this.id),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 3,
+          currentIndex: 4,
           selectedItemColor: Colors.indigo[900],
-
           onTap: (int index) {
-           if(index==0){
+            if (index == 0) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => Dpr(this.id)),
               );
-            }
-            else if(index==1){
+            } else if (index == 1) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => TaskWidget(this.id)),
+                MaterialPageRoute(builder: (context) => Documents(this.id)),
               );
-            }
-            else if(index==3){
+            } else if (index == 2) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Gallery(this.id)),
+              );
+            } else if (index == 3) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => TaskWidget(this.id)),
+                );
+            } else if (index == 4) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => PaymentTaskWidget(this.id)),
               );
             }
-            else if(index==2){
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Gallery(this.id)),
-              );
-            }
           },
           unselectedItemColor: Colors.grey[400],
-
           type: BottomNavigationBarType.fixed,
           items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home, ),
-              title: Text('Home', style: TextStyle(fontSize: 12),),
+              icon: Icon(
+                Icons.home,
+              ),
+              title: Text(
+                'Home',
+                style: TextStyle(fontSize: 12),
+              ),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.access_time, ),
-              title: Text('Scheduler', style: TextStyle(fontSize: 12),),
+              icon: Icon(
+                Icons.picture_as_pdf,
+              ),
+              title: Text(
+                'Drawings',
+                style: TextStyle(fontSize: 12),
+              ),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.photo_album, ),
-              title: Text("Gallery", style: TextStyle(fontSize: 12),),
+              icon: Icon(
+                Icons.photo_album,
+              ),
+              title: Text(
+                "Gallery",
+                style: TextStyle(fontSize: 12),
+              ),
             ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.access_time,
+                ),
+                title: Text(
+                  'Scheduler',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.payment,),
-              title: Text('Payment', style: TextStyle( fontSize: 12),),
-            ),
-
-
+                icon: Icon(
+                  Icons.payment,
+                ),
+                title: Text(
+                  'Payment',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+              
           ],
         ),
-
+        
       ),
     );
   }
@@ -145,7 +175,7 @@ class TaskItemWidget extends State<TaskItem> with SingleTickerProviderStateMixin
 
   _set_value() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    value_str = "6000000";
+    value_str = prefs.getString("pr_value");
     value = int.parse(value_str);
     setState(() {
       amt = ((int.parse(this._payment_percentage))/100 ) * value;
@@ -335,6 +365,7 @@ class PaymentTasks extends State<PaymentTasksClass> {
   var tasks = [];
   var id;
   var outstanding = "";
+  var total_paid = "";
   var project_value="";
 
   PaymentTasks(this.id);
@@ -350,15 +381,16 @@ class PaymentTasks extends State<PaymentTasksClass> {
   call() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     id = prefs.getString('project_id');
-    var url = 'https://www.buildahome.in/api/get_all_tasks.php?project_id=$id ';
+    var url = 'https://www.buildahome.in/api/get_all_tasks.php?project_id=$id&nt_toggle=1  ';
     var response = await http.get(url);
-    var url1 = 'https://www.buildahome.in/api/get_outstanding.php?project_id=$id ';
+    var url1 = 'https://www.buildahome.in/api/get_payment.php?project_id=$id ';
     var response1 = await http.get(url1);
     var details = jsonDecode(response1.body);
-    
+    prefs.setString("pr_value",details[0]['value']);
     setState(() {
     outstanding = details[0]['outstanding'];
-      project_value = details[0]['value'];
+    total_paid = details[0]['total_paid'];
+        project_value = details[0]['value'];
         body = jsonDecode(response.body);
     });
 
@@ -491,7 +523,20 @@ class PaymentTasks extends State<PaymentTasksClass> {
                 children: <Widget>[
                 Container(
                   width: 150,
-                  child: Text("Outstanding :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))
+                  child: Text("Paid till date :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[500]))
+                ),
+                Container(
+                  child: Text("₹ "+total_paid, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[500]))
+                )
+              ],)
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: <Widget>[
+                Container(
+                  width: 150,
+                  child: Text("Current Outstanding :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))
                 ),
                 Container(
                   child: Text("₹ "+outstanding, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))

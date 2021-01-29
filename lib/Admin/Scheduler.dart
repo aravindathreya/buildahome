@@ -11,6 +11,7 @@ import '../main.dart';
 import "Dpr.dart";
 import "Payments.dart";
 import "Gallery.dart";
+import 'Drawings.dart';
 
 class TaskWidget extends StatefulWidget{
   var id;
@@ -66,7 +67,7 @@ class TaskWidget1 extends State<TaskWidget> {
         ),
         body: TaskScreenClass(this.id),
         bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 1,
+          currentIndex: 3,
           selectedItemColor: Colors.indigo[900],
           onTap: (int index) {
             if (index == 0) {
@@ -77,18 +78,22 @@ class TaskWidget1 extends State<TaskWidget> {
             } else if (index == 1) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => TaskWidget(this.id)),
-              );
-            } else if (index == 3) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PaymentTaskWidget(this.id)),
+                MaterialPageRoute(builder: (context) => Documents(this.id)),
               );
             } else if (index == 2) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => Gallery(this.id)),
+              );
+            } else if (index == 3) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => TaskWidget(this.id)),
+                );
+            } else if (index == 4) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => PaymentTaskWidget(this.id)),
               );
             }
           },
@@ -106,10 +111,10 @@ class TaskWidget1 extends State<TaskWidget> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.access_time,
+                Icons.picture_as_pdf,
               ),
               title: Text(
-                'Scheduler',
+                'Drawings',
                 style: TextStyle(fontSize: 12),
               ),
             ),
@@ -122,18 +127,30 @@ class TaskWidget1 extends State<TaskWidget> {
                 style: TextStyle(fontSize: 12),
               ),
             ),
-            if(role!='' && role!='Site Engineer')
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.payment,
+            if (role == 'Site Engineer' || role == "Admin" || role == 'Project Coordinator')
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.access_time,
+                ),
+                title: Text(
+                  'Scheduler',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
-              title: Text(
-                'Payment',
-                style: TextStyle(fontSize: 12),
+            if (role == 'Project Coordinator' || role == "Admin")
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.payment,
+                ),
+                title: Text(
+                  'Payment',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
-            ),
+              
           ],
         ),
+        
       ),
     );
   }
@@ -436,7 +453,7 @@ class TaskScreen extends State<TaskScreenClass> {
     var p_id = prefs.getString('project_id');
 
     if (p_id != null) {
-      var url = 'https://www.buildahome.in/api/get_all_tasks.php?project_id=$p_id';
+      var url = 'https://www.buildahome.in/api/get_all_tasks.php?project_id=$p_id&nt_toggle=0';
       print(url);
       var response = await http.get(url);
       setState(() {

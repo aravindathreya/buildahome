@@ -56,7 +56,9 @@ class DashboardState extends State<Dashboard> {
   var role = "";
   var value = " ";
   var completed = "0";
-  var user_id ;
+  var user_id;
+  var data;
+  var search_data;
 
   @override
   void initState() {
@@ -70,8 +72,12 @@ class DashboardState extends State<Dashboard> {
     role = prefs.getString('role');
     var id = prefs.getString('project_id');
     user_id = prefs.getString('user_id');
+    var response = await http
+        .get("https://www.buildahome.in/api/projects_access.php?id=${user_id}");
 
     setState(() {
+      data = jsonDecode(response.body);
+      search_data = data;
       value = prefs.getString('project_value');
       completed = prefs.getString('completed');
       username = prefs.getString('username');
@@ -135,76 +141,78 @@ class DashboardState extends State<Dashboard> {
               BoxDecoration(border: Border(bottom: BorderSide(width: 3))),
         ),
         Container(
-            child: FutureBuilder(
-
-                future: http.get(
-                  "https://www.buildahome.in/api/projects_access.php?id=${user_id}",
-                ),
-                builder: (context, snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.none:
-                      return Text('Press button to start.');
-                    case ConnectionState.active:
-
-                    case ConnectionState.waiting:
-                      return Container(
-                        padding: EdgeInsets.only(top: 20),
-                        child: SpinKitThreeBounce(
-                          color: Colors.indigo[900],
-                          size: 30.0,
-                        ),
-                      );
-
-                    case ConnectionState.done:
-                      if (snapshot.hasError)
-                        return Text('Error: ${snapshot.error}');
-                      var projects = jsonDecode(snapshot.data.body);
-                      return ListView(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          children: <Widget>[
-                            ListView.builder(
-                                shrinkWrap: true,
-                                physics: new BouncingScrollPhysics(),
-                                scrollDirection: Axis.vertical,
-                                itemCount: projects.length,
-                                itemBuilder: (BuildContext ctxt, int Index) {
-                                  return InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => Dpr(projects[Index]['id'])),
-                                      );
-                                    },
-                                    child: Container(
-                                        padding: EdgeInsets.all(15),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.rectangle,
-                                          border: Border(
-                                            bottom: BorderSide(
-                                                width: 1.0,
-                                                color: Colors.black54),
-                                          ),
-                                          boxShadow: [
-                                            new BoxShadow(
-                                              color: Colors.black12,
-                                              blurRadius: 15,
-                                              spreadRadius: 2,
-                                            )
-                                          ],
-                                        ),
-                                        child: Container(
-                                            child: Text(projects[Index]['name'],
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight:
-                                                    FontWeight.bold))))
-                                  );
-                                })
-                          ]);
+          margin: EdgeInsets.only(bottom: 10, top: 10),
+          color: Colors.white,
+          child: TextFormField(
+            onChanged: (text) {
+              setState(() {
+                search_data= [];
+                for(int i=0;i<data.length; i++){
+                  if(text.trim()==""){
+                    search_data.add(data[i]);
+                  } else if(data[i]['name'].toLowerCase().contains(text)){
+                    search_data.add(data[i]);
                   }
-                })),
+                }
+              });
+            },
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              suffixIcon: InkWell(
+                child: Icon(Icons.search)  
+              ),
+              
+            ),
+          )
+        ),
+        ListView.builder(
+            shrinkWrap: true,
+            physics: new BouncingScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            itemCount: search_data == null ? 0 : search_data.length,
+            itemBuilder: (BuildContext ctxt, int Index) {
+              return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Dpr(search_data[Index]['id'])),
+                    );
+                  },
+                  child: Container(
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.rectangle,
+                        border: Border(
+                          bottom: BorderSide(width: 1.0, color: Colors.black54),
+                        ),
+                        boxShadow: [
+                          new BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            width: 60,
+                            child: Text((Index+1).toString()+".",
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                            )
+                          ),
+                          Container(
+                            child: Text(search_data[Index]['name'].trim(),
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                            )
+                          )
+                        ],
+                      )
+                      ));
+            })
       ],
     ));
   }

@@ -225,7 +225,7 @@ class NavMenuWidgetState extends State<NavMenuWidget> {
 //                  ),
                 if(role=='Client')
                   Container(
-                  child: NavMenuItem("Drawings", Icons.insert_drive_file, Documents()),
+                  child: NavMenuItem("Drawings & Documents", Icons.insert_drive_file, Documents()),
                 ),
                 if(role=='Admin'||role=='Project Coordinator'||role=='Site Engineer')
                   Container(
@@ -242,7 +242,7 @@ class NavMenuWidgetState extends State<NavMenuWidget> {
 //                  ),
                 if(role=='Client')
                   Container(
-                  child: NavMenuItem("Contact us", Icons.chat_bubble_outline, Chatbox()),
+                  child: NavMenuItem("Message Box", Icons.chat_bubble_outline, Chatbox()),
                 ),
 //                if(role=="Admin")
 //                  Container(

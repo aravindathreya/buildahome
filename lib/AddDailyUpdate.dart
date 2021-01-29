@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'NavMenu.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as Image;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,6 +82,7 @@ class AddDailyUpdateState extends State<AddDailyUpdateForm> {
   var update_pictures_names = [];
   var user_id;
   var pictures_path = [];
+  var success_response = 0;
 
   @override
   void initState() {
@@ -97,7 +99,7 @@ class AddDailyUpdateState extends State<AddDailyUpdateForm> {
   }
 
   void getFile() async {
-    var image = await FilePicker.getFile();
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 50);
     pictures_path.add(image);
     setState(() {
       _imgpath = image.path;
@@ -134,7 +136,27 @@ class AddDailyUpdateState extends State<AddDailyUpdateForm> {
     var responseString = String.fromCharCodes(responseData);
     print(responseData);
     print(responseString);
-    print("Done");
+    print(responseString.trim().toString()=="success");
+    if(responseString.trim().toString()=="success"){
+      success_response += 1;
+      print(success_response);
+      if(success_response==pictures_path.length){
+        Navigator.of(context, rootNavigator: true)
+          .pop('dialog');
+        showDialog(
+            context: context,  
+            builder: (BuildContext context) {
+              return ShowAlert(
+                  "Thanks for the update", false);
+            });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) =>
+              AdminDashboard()),
+        );
+      }
+    }
+    
   }
 
   void compressimage() async {
@@ -492,19 +514,7 @@ class AddDailyUpdateState extends State<AddDailyUpdateForm> {
                             }
 
 
-                            Navigator.of(context, rootNavigator: true)
-                                .pop('dialog');
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return ShowAlert(
-                                      "Thanks for the update", false);
-                                });
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) =>
-                                  AdminDashboard()),
-                            );
+                            
                           }
                         },
                       )),

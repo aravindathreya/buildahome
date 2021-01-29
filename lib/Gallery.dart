@@ -1,37 +1,26 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'NavMenu.dart';
-import 'package:photo_view/photo_view.dart';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
-
+import "FullScreenImage.dart";
 import "UserHome.dart";
 import "Scheduler.dart";
+import 'package:cached_network_image/cached_network_image.dart';
 import "Payments.dart";
 
-
+BuildContext context;
 var images = {};
 
-class FullScreenImage extends StatelessWidget {
-  var image;
-  FullScreenImage(this.image);
-  
-  Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-        child: PhotoView(
-            imageProvider: NetworkImage(this.image),
-        )
-    );
-  }
-}
 
 class Gallery extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(context) {
     final appTitle = 'buildAhome';
     final GlobalKey<ScaffoldState> _scaffoldKey =
         new GlobalKey<ScaffoldState>();
@@ -49,7 +38,7 @@ class Gallery extends StatelessWidget {
               onPressed: () => _scaffoldKey.currentState.openDrawer()),
           backgroundColor: Color(0xFF000055),
         ),
-        body: GalleryForm(),
+        body: GalleryForm(context),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 3 ,
           selectedItemColor: Colors.indigo[900],
@@ -109,13 +98,18 @@ class Gallery extends StatelessWidget {
 }
 
 class GalleryForm extends StatefulWidget {
+  var con;
+  GalleryForm(this.con);
+
   @override
   GalleryState createState() {
-    return GalleryState();
+    return GalleryState(this.con);
   }
 }
 
 class GalleryState extends State<GalleryForm> {
+  var con;
+  GalleryState(this.con);
 
   @override
   void initState() {
@@ -186,12 +180,12 @@ class GalleryState extends State<GalleryForm> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(context) {
     return new ListView.builder(
         padding: EdgeInsets.all(10),
         shrinkWrap: true,
         itemCount: subset==null? 0: subset.length,
-        itemBuilder: (BuildContext ctxt, int Index) {
+        itemBuilder: (context, int Index) {
 
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,17 +218,29 @@ class GalleryState extends State<GalleryForm> {
                               border: Border.all(),
                             ),
                             child: InkWell(
-                                onTap: () async {
+                                onTap: ()  {
                                   Navigator.push(
-                                    context,
+                                    
+                                    this.con,
                                     MaterialPageRoute(
-                                        builder: (BuildContext context1) => FullScreenImage(
+                                        builder: (context) => FullScreenImage(
                                             "https://buildahome.in/api/images/${entries[i]['image']}"
                                         )),
                                   );
                                 },
-                                child: Image.network(
-                                    "https://buildahome.in/api/images/${entries[i]['image']}")),
+                                child: CachedNetworkImage(
+                                    progressIndicatorBuilder: (context, url, progress) =>
+                                        Container(
+                                          height: 20, 
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            value: progress.progress,
+                                          ),
+                                        ),
+                                        
+                                    imageUrl:
+                                        "https://buildahome.in/api/images/${entries[i]['image']}",
+                                  ),)
                           )
                   ],
                 )

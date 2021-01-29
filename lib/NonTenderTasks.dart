@@ -195,7 +195,7 @@ class TaskItemWidget extends State<TaskItem> with SingleTickerProviderStateMixin
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
                               Text(
-                                this._payment_percentage + "%     ₹ "+amt.toString(),
+                                "₹  "+this._payment_percentage.toString(),
                                 style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -213,6 +213,9 @@ class TaskItemWidget extends State<TaskItem> with SingleTickerProviderStateMixin
 
 class PaymentTasks extends State<PaymentTasksClass> {
   var body;
+  var outstanding = '';
+  var total_paid = '';
+  var project_value = '';
 
   @override
   void initState() {
@@ -227,7 +230,15 @@ class PaymentTasks extends State<PaymentTasksClass> {
     var id = prefs.getString('project_id');
     var url = 'https://www.buildahome.in/api/get_all_non_tender.php?project_id=$id ';
     var response = await http.get(url);
+    print(response.body);
+    var url1 = 'https://www.buildahome.in/api/get_payment.php?project_id=$id ';
+    var response1 = await http.get(url1);
+    print(response1.body);
+    var details = jsonDecode(response1.body);
     setState(() {
+      outstanding = details[0]['nt_outstanding'];
+      total_paid = details[0]['nt_total_paid'];
+      project_value = details[0]['nt_value'].toString();
       body = jsonDecode(response.body);
     });
   }
@@ -311,6 +322,71 @@ class PaymentTasks extends State<PaymentTasksClass> {
           ],
         ),
       ),
+      Container(
+        margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Column(
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: <Widget>[
+                Container(
+                  width: 150,
+                  child: Text("Project Value :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                ),
+                Container(
+                  child: Text("₹ "+project_value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                )
+              ],)
+            ),
+            // Container(
+            //   padding: EdgeInsets.symmetric(vertical: 5),
+            //   child: Row(
+            //     children: <Widget>[
+            //     Container(
+            //       width: 150,
+            //       child: Text("Amount paid :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green))
+            //     ),
+            //     Container(
+            //       child: Text("₹ 3,00,000", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green))
+            //     )
+            //   ],)
+            // ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: <Widget>[
+                Container(
+                  width: 150,
+                  child: Text("Paid till date :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[500]))
+                ),
+                Container(
+                  child: Text("₹ "+total_paid, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[500]))
+                )
+              ],)
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: <Widget>[
+                Container(
+                  width: 150,
+                  child: Text("Current Outstanding :", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))
+                ),
+                Container(
+                  child: Text("₹ "+outstanding, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red[500]))
+                )
+              ],)
+            )
+          ],
+        ),
+      ),
+      
       new ListView.builder(
           shrinkWrap: true,
           physics: BouncingScrollPhysics(),
